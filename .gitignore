@@ -1,0 +1,10 @@
+# 備份 / 還原檔
+*.bak
+*.bak-*
+*.backup-*
+_backup_zh_config.kdl
+dms/_backup_zh/
+
+# 產生的暫存
+*.log
+__pycache__/
