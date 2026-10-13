@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# power-tune —— 根据 AC/电池状态自动切换电源策略
+# 与 power-profiles-daemon(PPD) 配合使用，不安装/不冲突 TLP。
+# 由 udev(Mains 变化) + systemd 触发；也可手动运行。
+set -u
+
+CONF="/etc/default/power-tune"
+# shellcheck disable=SC1090
+[ -r "$CONF" ] && . "$CONF"
+
+PROFILE_ON_AC="${PROFILE_ON_AC:-performance}"
+PROFILE_ON_BAT="${PROFILE_ON_BAT:-power-saver}"
+ENABLE_SYSFS_TUNING="${ENABLE_SYSFS_TUNING:-yes}"
+ASPM_ON_BAT="${ASPM_ON_BAT:-powersave}"
+SWAPPINESS_ON_AC="${SWAPPINESS_ON_AC:-60}"
+SWAPPINESS_ON_BAT="${SWAPPINESS_ON_BAT:-100}"
+USB_AUTOSUSPEND="${USB_AUTOSUSPEND:-no}"
+
+log() {
+    logger -t power-tune -- "$*" 2>/dev/null || true
+    [ -t 1 ] && echo "power-tune: $*"
+}
+
+wr() { # wr <value> <path>
+    [ -w "$2" ] || return 0
+    printf '%s\n' "$1" > "$2" 2>/dev/null || log "写入失败: $2"
+}
+
+# ---------- 1. 读取 AC 在线状态 ----------
+ac_online=0
+for p in /sys/class/power_supply/AC* /sys/class/power_supply/ADP* /sys/class/power_supply/ACAD*; do
+    [ -r "$p/online" ] || continue
+    [ "$(cat "$p/online" 2>/dev/null)" = "1" ] && ac_online=1
+done
+
+if [ "$ac_online" = "1" ]; then
+    state="AC"; profile="$PROFILE_ON_AC"
+else
+    state="BAT"; profile="$PROFILE_ON_BAT"
+fi
+
+log "state=$state profile=$profile"
+
+# ---------- 2. 切换 PPD 配置（带重试，等 PPD/dbus 就绪） ----------
+if command -v powerprofilesctl >/dev/null 2>&1; then
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+        if powerprofilesctl set "$profile" 2>/dev/null; then
+            log "PPD profile -> $profile"; break
+        fi
+        sleep 0.5
+    done
+fi
+
+[ "$ENABLE_SYSFS_TUNING" = "yes" ] || exit 0
+
+# ---------- 3. WiFi 省电 ----------
+for w in /sys/class/net/wl*; do
+    [ -e "$w" ] || continue
+    iface="$(basename "$w")"
+    if [ "$ac_online" = "1" ]; then
+        iw dev "$iface" set power_save off 2>/dev/null || true
+    else
+        iw dev "$iface" set power_save on 2>/dev/null || true
+    fi
+done
+
+# ---------- 4. 内核 / 内存 / PCIe 调优 ----------
+if [ "$ac_online" = "1" ]; then
+    # ===== 插电：性能优先 =====
+    wr 1 /proc/sys/kernel/nmi_watchdog
+    wr "$SWAPPINESS_ON_AC" /proc/sys/vm/swappiness
+    wr 0 /proc/sys/vm/laptop_mode
+    # ASPM 回到固件默认，NVMe/网卡性能与稳定性最佳
+    wr default /sys/module/pcie_aspm/parameters/policy
+else
+    # ===== 电池：省电优先 =====
+    wr 0 /proc/sys/kernel/nmi_watchdog
+    wr "$SWAPPINESS_ON_BAT" /proc/sys/vm/swappiness   # zram 优先，多用压缩内存
+    wr 5 /proc/sys/vm/laptop_mode                     # 延后磁盘回写
+    wr 1500 /proc/sys/vm/dirty_writeback_centisecs
+    wr "$ASPM_ON_BAT" /sys/module/pcie_aspm/parameters/policy
+fi
+
+# USB 自动挂起（默认关闭，避免鼠标/键盘延迟；置 yes 可省 0.5~1W）
+if [ "$USB_AUTOSUSPEND" = "yes" ]; then
+    wr 2 /sys/module/usbcore/parameters/autosuspend
+fi
+
+log "done(state=$state)"
+exit 0

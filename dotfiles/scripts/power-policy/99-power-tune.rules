@@ -1,0 +1,2 @@
+# AC(Mains) 插拔时触发 power-tune.service
+SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ACTION=="change", TAG+="systemd", ENV{SYSTEMD_WANTS}="power-tune.service"

@@ -88,9 +88,9 @@ binds {
     Mod+Shift+W hotkey-overlay-title="建立視窗規則" { spawn "dms" "ipc" "call" "window-rules" "toggle"; }
 
     // === Focus Navigation ===
+    // 註：Mod+Up / Mod+Down 已改為切換工作區（見下方 Workspace Navigation），
+    //     視窗上下聚焦請用 Mod+K / Mod+J。
     Mod+Left hotkey-overlay-title="向左聚焦欄" { focus-column-left; }
-    Mod+Down hotkey-overlay-title="向下聚焦視窗" { focus-window-down; }
-    Mod+Up hotkey-overlay-title="向上聚焦視窗" { focus-window-up; }
     Mod+Right hotkey-overlay-title="向右聚焦欄" { focus-column-right; }
     Mod+H hotkey-overlay-title="向左聚焦欄" { focus-column-left; }
     Mod+J hotkey-overlay-title="向下聚焦視窗" { focus-window-down; }
@@ -134,6 +134,9 @@ binds {
     Mod+Shift+Ctrl+L hotkey-overlay-title="移動欄到右側螢幕" { move-column-to-monitor-right; }
 
     // === Workspace Navigation ===
+    // Mod+Down 往下、Mod+Up 往上，和實際方向一致（1 在最上，號碼往下遞增）
+    Mod+Down hotkey-overlay-title="切換到下方工作區" { focus-workspace-down; }
+    Mod+Up hotkey-overlay-title="切換到上方工作區" { focus-workspace-up; }
     Mod+Page_Down hotkey-overlay-title="聚焦下方工作區" { focus-workspace-down; }
     Mod+Page_Up hotkey-overlay-title="聚焦上方工作區" { focus-workspace-up; }
     Mod+U hotkey-overlay-title="聚焦下方工作區" { focus-workspace-down; }
@@ -211,13 +214,17 @@ binds {
     Mod+Shift+Minus hotkey-overlay-title="視窗高度 -10%" { set-window-height "-10%"; }
     Mod+Shift+Equal hotkey-overlay-title="視窗高度 +10%" { set-window-height "+10%"; }
 
-    // === Screenshots ===
+    // === Screenshots（仿 Windows 快捷鍵）===
+    // Win+Shift+S → 區域截圖（對應 Windows 剪取工具）
+    Mod+Shift+S hotkey-overlay-title="截圖：區域（Win+Shift+S）" { spawn "dms" "screenshot"; }
+    // PrintScreen → 全螢幕截圖
+    Print hotkey-overlay-title="截圖：全螢幕（PrintScreen）" { spawn "dms" "screenshot" "full"; }
+    // Alt+PrintScreen → 使用中視窗截圖
+    Alt+Print hotkey-overlay-title="截圖：使用中視窗（Alt+PrintScreen）" { spawn "dms" "screenshot" "window"; }
+    // 筆電／鍵盤上的額外截圖鍵
     XF86Launch1 hotkey-overlay-title="截圖：區域" { spawn "dms" "screenshot"; }
     Ctrl+XF86Launch1 hotkey-overlay-title="截圖：全螢幕" { spawn "dms" "screenshot" "full"; }
     Alt+XF86Launch1 hotkey-overlay-title="截圖：視窗" { spawn "dms" "screenshot" "window"; }
-    Print hotkey-overlay-title="截圖：區域" { spawn "dms" "screenshot"; }
-    Ctrl+Print hotkey-overlay-title="截圖：全螢幕" { spawn "dms" "screenshot" "full"; }
-    Alt+Print hotkey-overlay-title="截圖：視窗" { spawn "dms" "screenshot" "window"; }
     // === Display Profiles ===
     Mod+P hotkey-overlay-title="循環顯示設定" {
         spawn "dms" "ipc" "outputs" "cycleProfile";

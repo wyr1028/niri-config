@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodically ensure DMS fcitx5 theme PNG backgrounds are up to date
+
+[Timer]
+OnBootSec=15s
+OnUnitActiveSec=20s
+AccuracySec=5s
+Unit=fcitx5-dms-png.service
+
+[Install]
+WantedBy=timers.target

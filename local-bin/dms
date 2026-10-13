@@ -1,0 +1,11 @@
+#!/bin/sh
+# DMS wrapper：只攔截 `dms keybinds show`，把 cheatsheet 的分類/標題翻成繁體中文。
+# 其餘指令一律直接交給真正的 dms。
+if [ "$1" = "keybinds" ] && [ "$2" = "show" ]; then
+    /usr/bin/dms "$@" 2>/tmp/dms-keybinds-err.$$ | /home/wyr/.local/bin/dms-keybinds-zh.py
+    _rc=$?
+    [ -s /tmp/dms-keybinds-err.$$ ] && cat /tmp/dms-keybinds-err.$$ >&2
+    rm -f /tmp/dms-keybinds-err.$$
+    exit $_rc
+fi
+exec /usr/bin/dms "$@"

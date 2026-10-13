@@ -1,0 +1,13 @@
+[Unit]
+Description=Sync internal display refresh rate with AC power
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/niri-refresh-auto.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

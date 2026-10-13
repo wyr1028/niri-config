@@ -1,0 +1,13 @@
+[Unit]
+Description=Apply AC/battery power policy tuning (power-tune)
+After=power-profiles-daemon.service
+Wants=power-profiles-daemon.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/power-tune
+
+[Install]
+# PPD 自己是 After=multi-user.target，所以本服务不能挂在 multi-user.target 上，
+# 否则会形成 ordering cycle（会被 systemd 丢弃）。挂到 graphical.target 即可。
+WantedBy=graphical.target

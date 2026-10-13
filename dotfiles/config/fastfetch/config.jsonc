@@ -1,0 +1,72 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+
+    // Minimal cyberpunk logo rendered with chafa (block chars), tinted with the blue theme.
+    // Source PNG: cyber-skull.png. Regenerate (change -s WxH to resize) with:
+    //   chafa -f symbols --symbols block --fg-only -c 240 -s 20x10 --stretch \
+    //     ~/.config/fastfetch/cyber-skull.png \
+    //     | sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g; s/[[:space:]]*$//' \
+    //     | awk 'NF{print "$1"$0}' > ~/.config/fastfetch/cyber-skull.fflogo
+    // Alternatives: cyber-triangle, cyber-eye, cyber-hex, cyber-wmono (same folder).
+    "logo": {
+        "type": "file",
+        "source": "~/.config/fastfetch/cyber-skull.fflogo",
+        "color": { "1": "#42A5F5" },
+        "padding": { "top": 1, "left": 3, "right": 4 }
+    },
+
+    "display": {
+        "separator": "  ",
+        "color": {
+            "keys": "blue",
+            "title": "cyan",
+            "separator": "bright_black"
+        },
+        "bar": {
+            "char": { "elapsed": "■", "total": "─" },
+            "border": { "left": "[", "right": "]" },
+            "color": {
+                "elapsed": "green",
+                "total": "bright_black",
+                "border": "bright_black"
+            },
+            "width": 12
+        },
+        "percent": {
+            "type": ["bar", "num", "num-color"],
+            "ndigits": 0
+        },
+        "key": { "type": "string", "paddingLeft": 2 }
+    },
+
+    "modules": [
+        {
+            "type": "title",
+            "key": " ",
+            "format": "\u001b[1;38;2;66;165;245mUbuntu\u001b[22;38;2;128;128;128m@\u001b[1;38;2;95;215;255m{host-name}\u001b[0m"
+        },
+        {
+            "type": "separator",
+            "string": "─",
+            "outputColor": "bright_black",
+            "times": 28
+        },
+
+        { "type": "os",        "key": "   OS" },
+        { "type": "kernel",    "key": "   Kernel" },
+        { "type": "uptime",    "key": "  󱎫 Uptime" },
+        { "type": "shell",     "key": "   Shell" },
+
+        { "type": "break",     "key": "" },
+
+        {
+            "type": "cpu",
+            "key": "   CPU",
+            "showPeCoreCount": true,
+            "temp": true
+        },
+        { "type": "gpu",       "key": "  󰢮 GPU" },
+        { "type": "memory",    "key": "   Memory" },
+        { "type": "disk",      "key": "  󰋊 Disk", "folders": "/" }
+    ]
+}

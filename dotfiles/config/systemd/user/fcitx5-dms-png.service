@@ -1,0 +1,8 @@
+[Unit]
+Description=Convert DMS fcitx5 theme SVG backgrounds to PNG (for Qt apps without SVG support)
+# DMS 重新產生主題時會短時間內大量變動，關掉啟動速率限制，否則會被 rate-limit 擋掉而永久失效
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/fcitx5-dms-png.sh

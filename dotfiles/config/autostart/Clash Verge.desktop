@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Clash Verge
+Comment=Clash Verge startup script
+Exec=/home/wyr/.local/bin/clash-verge-autostart.sh 
+StartupNotify=false
+Terminal=false

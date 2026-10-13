@@ -6,9 +6,6 @@ config-notification {
     disable-failed
 }
 
-// 网易云音乐静默自启用的命名工作区（命名工作区始终存在，开机后不会抢当前焦点）
-workspace "music"
-
 gestures {
     hot-corners {
         off
@@ -121,6 +118,10 @@ layout {
         color "#0007"
     }
     struts {
+        // 負數 strut = 往外擴張工作區，等於把「上下的外距」縮小。
+        // 目前 gaps = 35（左右不變），上下各 -15 → 上下 gap 約 20。
+        top -15
+        bottom -15
     }
 }
 layer-rule {
@@ -172,6 +173,8 @@ hotkey-overlay {
 prefer-no-csd
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 animations {
+    // 全部動畫放慢 1.2 倍（<1 為加速）
+    slowdown 1.2
     workspace-switch {
         spring damping-ratio=0.80 stiffness=523 epsilon=0.0001
     }
@@ -242,6 +245,51 @@ window-rule {
     default-floating-position x=10 y=10 relative-to="bottom-right"
     open-focused false
 }
+
+// ============================================================
+// 常駐浮動視窗（Always-floating windows）
+// 說明：niri 的 `open-floating true` 是「視窗一開啟就浮動」。
+// niri 沒有「強制鎖定浮動」的開關，但視窗一旦浮動，
+// 除非你自己按 Mod+V（toggle-window-floating），否則會一直浮動。
+//
+// 重點：opening 屬性只在視窗「開啟時」套用一次。
+//   → 改完設定後，已開著的視窗不會馬上變浮動，
+//     要把它關掉再開（或按 Mod+V 手動切一次）。
+// 查 app-id：執行 `niri msg pick-window` 再點該視窗。
+// ============================================================
+
+// 微信（主視窗）
+window-rule {
+    match app-id=r#"^wechat$"#
+    open-floating true
+}
+
+// 微信內建瀏覽器 / 小程式視窗
+window-rule {
+    match app-id=r#"^WeChatAppEx$"#
+    open-floating true
+}
+
+// Steam 主客戶端、好友名單、聊天等視窗
+// （排除右下角通知 toast，上面那條規則已單獨處理）
+window-rule {
+    match app-id=r#"^steam$"#
+    exclude title=r#"^notificationtoasts_"#
+    open-floating true
+}
+
+// 其他適合浮動的應用：播放器、看圖、計算機、磁碟用量等
+window-rule {
+    match app-id=r#"^mpv$"#
+    match app-id=r#"^vlc$"#
+    match app-id=r#"^org\.videolan\.vlc$"#
+    match app-id=r#"^org\.gnome\.Loupe$"#
+    match app-id=r#"^org\.gnome\.Calculator$"#
+    match app-id=r#"^gnome-calculator$"#
+    match app-id=r#"^org\.gnome\.baobab$"#
+    open-floating true
+}
+
 window-rule {
     match app-id=r#"^org\.wezfurlong\.wezterm$"#
     match app-id="Alacritty"
@@ -256,9 +304,8 @@ window-rule {
     open-floating true
 }
 window-rule {
-    // 网易云音乐：开机静默启动——窗口落到命名工作区 "music"，不抢焦点
-    match app-id=r#"^com\.gitee\.gmg137\.NeteaseCloudMusicGtk4$"#
-    open-on-workspace "music"
+    // 网易云音乐：开机自启时不要抢焦点（启动脚本会立刻把它收进系统托盘）
+    match at-startup=true app-id=r#"^com\.gitee\.gmg137\.NeteaseCloudMusicGtk4$"#
     open-focused false
 }
 debug {
